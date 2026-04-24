@@ -3,558 +3,92 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cronograma de Estudos — Ciclo Mensal</title>
+<title>Cronograma PCBA — Admin Panel</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0d0f14;
-    --surface: #13161d;
-    --card: #1a1e28;
-    --border: #252a38;
-    --accent: #f0c040;
-    --accent2: #4fc3f7;
-    --accent3: #a78bfa;
-    --green: #4ade80;
-    --red: #f87171;
-    --text: #e8eaf0;
-    --muted: #6b7280;
-    --mono: 'Space Mono', monospace;
-    --sans: 'Syne', sans-serif;
+    --bg: #0d0f14; --surface: #13161d; --card: #1a1e28; --border: #252a38;
+    --accent: #f0c040; --accent2: #4fc3f7; --accent3: #a78bfa;
+    --green: #4ade80; --red: #f87171; --text: #e8eaf0; --muted: #6b7280;
+    --mono: 'Space Mono', monospace; --sans: 'Syne', sans-serif;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+  
+  header { border-bottom: 1px solid var(--border); padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; background: #11141b; }
+  .admin-badge { font-family: var(--mono); font-size: 0.6rem; padding: 4px 8px; border-radius: 4px; background: rgba(74, 222, 128, 0.1); color: var(--green); border: 1px solid var(--green); display: none; margin-left: 10px; }
+  .login-trigger { cursor: pointer; opacity: 0.5; font-size: 1.2rem; transition: 0.3s; }
+  .login-trigger:hover { opacity: 1; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-  }
+  .tabs { display: flex; gap: 4px; padding: 0 40px; border-bottom: 1px solid var(--border); background: var(--bg); }
+  .tab-btn { font-family: var(--mono); font-size: 0.7rem; padding: 15px 20px; border: none; background: transparent; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-  /* ── HEADER ── */
-  header {
-    border-bottom: 1px solid var(--border);
-    padding: 28px 40px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    flex-wrap: wrap;
-    gap: 12px;
-    background: linear-gradient(180deg, #11141b 0%, transparent 100%);
-  }
-  header h1 {
-    font-family: var(--sans);
-    font-weight: 800;
-    font-size: 1.6rem;
-    letter-spacing: -0.5px;
-    color: var(--text);
-  }
-  header h1 span { color: var(--accent); }
-  header p { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
-
-  /* ── TABS ── */
-  .tabs {
-    display: flex;
-    gap: 4px;
-    padding: 20px 40px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .tab-btn {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 8px 20px;
-    border: 1px solid transparent;
-    border-bottom: none;
-    border-radius: 6px 6px 0 0;
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .tab-btn:hover { color: var(--text); background: var(--surface); }
-  .tab-btn.active {
-    background: var(--card);
-    color: var(--accent);
-    border-color: var(--border);
-  }
-
-  /* ── MAIN ── */
-  main { padding: 32px 40px; max-width: 1300px; margin: 0 auto; }
+  main { padding: 32px 40px; max-width: 1100px; margin: 0 auto; }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
-  /* ── SECTION TITLES ── */
-  .section-title {
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
+  .week-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
+  .week-header { padding: 15px 20px; background: var(--surface); display: flex; justify-content: space-between; font-family: var(--mono); font-size: 0.8rem; color: var(--accent); }
+  .day-row { display: grid; grid-template-columns: 120px 1fr 1fr; padding: 12px 20px; border-bottom: 1px solid var(--border); align-items: center; }
+  .day-name { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
+  
+  .check-wrap { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .check-wrap input { display: none; }
+  .custom-check { width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 4px; transition: 0.2s; }
+  input:checked + .custom-check { background: var(--accent); border-color: var(--accent); }
+  input:disabled + .custom-check { opacity: 0.3; cursor: not-allowed; }
 
-  /* ── WEEK CARDS ── */
-  .week-grid {
-    display: grid;
-    gap: 24px;
-    margin-bottom: 40px;
-  }
-
-  .week-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-  }
-  .week-header {
-    background: var(--surface);
-    padding: 14px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--border);
-  }
-  .week-label {
-    font-family: var(--mono);
-    font-size: 0.75rem;
-    color: var(--accent);
-    font-weight: 700;
-  }
-  .week-progress-text {
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    color: var(--muted);
-  }
-  .week-progress-bar {
-    height: 3px;
-    background: var(--border);
-  }
-  .week-progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    transition: width 0.4s ease;
-    border-radius: 2px;
-  }
-
-  /* ── DAYS TABLE ── */
-  .days-table { width: 100%; }
-  .day-row {
-    display: grid;
-    grid-template-columns: 110px 1fr 1fr 80px;
-    align-items: center;
-    padding: 0 20px;
-    border-bottom: 1px solid var(--border);
-    min-height: 48px;
-    gap: 12px;
-    transition: background 0.15s;
-  }
-  .day-row:last-child { border-bottom: none; }
-  .day-row:hover { background: rgba(255,255,255,0.02); }
-  .day-row.weekend { grid-template-columns: 110px 1fr 80px; }
-
-  .day-name {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .day-name.sat { color: var(--accent2); }
-  .day-name.sun { color: var(--accent3); }
-  .day-name.completed { color: var(--green); }
-
-  .session-block {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .session-label {
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-  .session-label.s1 { color: rgba(240,192,64,0.7); }
-  .session-label.s2 { color: rgba(79,195,247,0.7); }
-  .session-label.weekend-lbl { color: rgba(167,139,250,0.7); }
-
-  /* ── CHECKBOX ── */
-  .check-wrap {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-  }
-  .check-wrap input[type="checkbox"] { display: none; }
-  .custom-check {
-    width: 20px;
-    height: 20px;
-    border: 1.5px solid var(--border);
-    border-radius: 4px;
-    background: var(--surface);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    flex-shrink: 0;
-    cursor: pointer;
-  }
-  .custom-check::after {
-    content: '';
-    width: 10px;
-    height: 7px;
-    border-left: 2px solid transparent;
-    border-bottom: 2px solid transparent;
-    transform: rotate(-45deg) translateY(-1px);
-    transition: all 0.15s;
-  }
-  input[type="checkbox"]:checked + .custom-check {
-    background: var(--accent);
-    border-color: var(--accent);
-  }
-  input[type="checkbox"]:checked + .custom-check::after {
-    border-left-color: #000;
-    border-bottom-color: #000;
-  }
-
-  .day-total {
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    color: var(--muted);
-    text-align: right;
-  }
-  .day-total .mins { color: var(--accent); font-weight: 700; }
-
-  /* ── TABLE HEADER ── */
-  .day-row-head {
-    display: grid;
-    grid-template-columns: 110px 1fr 1fr 80px;
-    padding: 8px 20px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    gap: 12px;
-  }
-  .day-row-head.weekend { grid-template-columns: 110px 1fr 80px; }
-  .col-head {
-    font-family: var(--mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.1em;
-    color: var(--muted);
-    text-transform: uppercase;
-  }
-
-  /* ── STATS ROW ── */
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    margin-bottom: 40px;
-  }
-  .stat-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 18px 20px;
-  }
-  .stat-label {
-    font-family: var(--mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
-  .stat-value {
-    font-family: var(--mono);
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: var(--text);
-  }
-  .stat-value span { font-size: 0.75rem; color: var(--muted); margin-left: 4px; }
-  .stat-sub { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); margin-top: 4px; }
-
-  /* ── CHARTS ── */
-  .charts-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-bottom: 40px;
-  }
-  @media (max-width: 800px) { .charts-grid { grid-template-columns: 1fr; } }
-  .chart-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-  }
-  .chart-title {
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 18px;
-  }
-  canvas { width: 100% !important; }
-
-  /* ── EXTRAS ── */
-  .extra-section {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 40px;
-  }
-  .extra-row {
-    display: grid;
-    grid-template-columns: 120px 180px 1fr 80px 40px;
-    gap: 12px;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  .extra-row.head .col-head { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-  input[type="date"], input[type="time"], input[type="number"], input[type="text"] {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    padding: 7px 10px;
-    width: 100%;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  input:focus { border-color: var(--accent); }
-  input[type="number"] { width: 70px; }
-  .btn-add, .btn-remove {
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--muted);
-    font-family: var(--mono);
-    font-size: 0.75rem;
-    cursor: pointer;
-    padding: 6px 10px;
-    transition: all 0.2s;
-  }
-  .btn-add { color: var(--accent); border-color: var(--accent); padding: 8px 18px; }
-  .btn-add:hover { background: var(--accent); color: #000; }
-  .btn-remove:hover { background: var(--red); color: #fff; border-color: var(--red); }
-  .extra-total {
-    font-family: var(--mono);
-    font-size: 0.75rem;
-    color: var(--accent);
-    text-align: right;
-    margin-top: 14px;
-    padding-top: 12px;
-    border-top: 1px solid var(--border);
-  }
-
-  /* ── NOTES ── */
-  textarea {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 0.75rem;
-    padding: 14px;
-    width: 100%;
-    resize: vertical;
-    outline: none;
-    min-height: 90px;
-    transition: border-color 0.2s;
-  }
+  .btn { font-family: var(--mono); padding: 10px 20px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; background: var(--surface); color: var(--text); font-size: 0.7rem; }
+  .btn-accent { border-color: var(--accent); color: var(--accent); }
+  
+  textarea { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 15px; border-radius: 8px; font-family: var(--mono); min-height: 200px; outline: none; }
   textarea:focus { border-color: var(--accent); }
-
-  /* ── RESET ── */
-  .btn-reset {
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    border-radius: 6px;
-    padding: 7px 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .btn-reset:hover { border-color: var(--red); color: var(--red); }
-
-  /* ── BAR CHART (CSS) ── */
-  .bar-chart-wrap { display: flex; align-items: flex-end; gap: 8px; height: 120px; }
-  .bar-col { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 4px; height: 100%; justify-content: flex-end; }
-  .bar-col-label { font-family: var(--mono); font-size: 0.58rem; color: var(--muted); text-transform: uppercase; }
-  .bar-outer { width: 100%; background: var(--surface); border-radius: 4px 4px 0 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
-  .bar-fill { width: 100%; transition: height 0.5s ease; border-radius: 4px 4px 0 0; }
-  .bar-pct { font-family: var(--mono); font-size: 0.62rem; color: var(--text); }
-
-  /* ── DONUT ── */
-  .donut-wrap { display: flex; align-items: center; gap: 24px; }
-  .donut-svg { flex-shrink: 0; }
-  .donut-legend { display: flex; flex-direction: column; gap: 8px; }
-  .legend-item { display: flex; align-items: center; gap: 8px; }
-  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .legend-text { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); }
-  .legend-val { font-family: var(--mono); font-size: 0.65rem; color: var(--text); margin-left: auto; }
-
-  @media (max-width: 700px) {
-    main { padding: 20px 16px; }
-    .tabs { padding: 16px 16px 0; }
-    header { padding: 20px 16px 16px; }
-    .day-row, .day-row-head { grid-template-columns: 90px 1fr; }
-    .day-row.weekend, .day-row-head.weekend { grid-template-columns: 90px 1fr; }
-    .charts-grid { grid-template-columns: 1fr; }
-    .extra-row { grid-template-columns: 1fr 1fr; }
-  }
-
-  .pill {
-    display: inline-block;
-    font-family: var(--mono);
-    font-size: 0.55rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    padding: 2px 8px;
-    border-radius: 20px;
-    background: rgba(240,192,64,0.1);
-    color: var(--accent);
-    border: 1px solid rgba(240,192,64,0.2);
-    margin-left: 6px;
-    vertical-align: middle;
-  }
-
-  .inline-flex { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  textarea[readonly] { cursor: default; color: var(--muted); }
 </style>
 </head>
 <body>
 
 <header>
   <div>
-    <h1>Cronograma de <span>Estudos</span></h1>
-    <p>Ciclo de adaptação · 1 mês · Concurso Público — Arquiteto SEC-BA</p>
+    <h1>Cronograma <span style="color:var(--accent)">PCBA</span> <span id="badge" class="admin-badge">EDITOR</span></h1>
   </div>
-  <div style="text-align:right">
-    <p id="header-date" style="font-family:var(--mono);font-size:0.7rem;color:var(--muted)"></p>
-    <p style="font-family:var(--mono);font-size:0.65rem;color:var(--muted);margin-top:4px">
-      Sessões planejadas/mês: <span style="color:var(--accent)" id="total-sessions-month">—</span>
-    </p>
+  <div id="auth-area">
+    <span class="login-trigger" id="login-btn" title="Login Administrador">🔒</span>
   </div>
 </header>
 
-<div class="tabs">
-  <button class="tab-btn active" id="btn-tab-semanas">Semanas</button>
-  <button class="tab-btn" id="btn-tab-graficos">Gráficos</button>
-  <button class="tab-btn" id="btn-tab-extras">Sessões Extras</button>
-  <button class="tab-btn" id="btn-tab-notas">Notas</button>
-</div>
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="semanas">Cronograma</button>
+  <button class="tab-btn" data-tab="extras">Sessões Extras</button>
+  <button class="tab-btn" data-tab="notas">Notas</button>
+</nav>
 
 <main>
-
-<div class="tab-panel active" id="tab-semanas">
-  <div class="stats-row" id="stats-row">
-    <div class="stat-card">
-      <div class="stat-label">Sessões feitas</div>
-      <div class="stat-value" id="s-done">0<span>/ <span id="s-total">0</span></span></div>
-      <div class="stat-sub" id="s-pct">0% do ciclo</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Horas cumpridas</div>
-      <div class="stat-value" id="s-hours">0<span>h</span></div>
-      <div class="stat-sub" id="s-hours-total">de <span id="s-hours-max">0</span>h planejadas</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Dias completos</div>
-      <div class="stat-value" id="s-days-done">0<span>/<span id="s-days-total">0</span></span></div>
-      <div class="stat-sub">dias com 100% das sessões</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Semana atual</div>
-      <div class="stat-value" id="s-week-pct">—</div>
-      <div class="stat-sub" id="s-week-label">—</div>
-    </div>
+  <div id="tab-semanas" class="tab-panel active">
+    <div id="weeks-container">Carregando dados do banco...</div>
   </div>
-  <div id="weeks-container"></div>
-</div>
 
-<div class="tab-panel" id="tab-graficos">
-  <div class="charts-grid">
-    <div class="chart-card">
-      <div class="chart-title">Cumprimento por semana (%)</div>
-      <div class="bar-chart-wrap" id="chart-weekly-bars"></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Distribuição — Sessões do ciclo</div>
-      <div class="donut-wrap">
-        <svg class="donut-svg" id="donut-svg" width="110" height="110" viewBox="0 0 110 110"></svg>
-        <div class="donut-legend" id="donut-legend"></div>
-      </div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Progresso diário — Horas acumuladas</div>
-      <canvas id="chart-cumulative" height="140"></canvas>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Sessões por tipo — mês completo</div>
-      <div class="bar-chart-wrap" id="chart-session-type"></div>
-    </div>
-  </div>
-</div>
-
-<div class="tab-panel" id="tab-extras">
-  <div class="section-title">Sessões de Estudo Não Planejadas</div>
-  <div class="extra-section">
-    <p style="font-family:var(--mono);font-size:0.68rem;color:var(--muted);margin-bottom:20px;">
-      Registre aqui qualquer sessão extra realizada fora do cronograma padrão.
-    </p>
-    <div class="extra-row head">
-      <div class="col-head">Data</div>
-      <div class="col-head">Duração (min)</div>
-      <div class="col-head">Descrição / Matéria</div>
-      <div class="col-head">Semana</div>
-      <div></div>
+  <div id="tab-extras" class="tab-panel">
+    <div id="admin-extras-controls" style="margin-bottom: 20px; display: none;">
+        <button class="btn btn-accent" id="add-extra-btn">+ Registrar Estudo Extra</button>
     </div>
     <div id="extras-list"></div>
-    <div style="margin-top:16px">
-      <button class="btn-add" id="btn-add-extra">+ Adicionar sessão extra</button>
-    </div>
-    <div class="extra-total" id="extras-total">Total extras: 0 min · 0h 0min</div>
   </div>
-</div>
 
-<div class="tab-panel" id="tab-notas">
-  <div class="section-title">Notas gerais do ciclo</div>
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:24px;">
-    <textarea id="notes-area" placeholder="Escreva suas notas aqui..."></textarea>
-    <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-family:var(--mono);font-size:0.62rem;color:var(--muted)" id="notes-chars">0 caracteres</span>
-      <button class="btn-reset" id="btn-clear-notes">Limpar</button>
+  <div id="tab-notas" class="tab-panel">
+    <textarea id="notes-area" placeholder="Suas anotações de estudo aparecerão aqui..." readonly></textarea>
+    <div id="admin-reset-area" style="margin-top: 30px; display: none; border-top: 1px solid var(--border); padding-top: 20px;">
+        <p style="color:var(--muted); font-size: 0.7rem; margin-bottom: 10px;">Zona de Perigo:</p>
+        <button class="btn" style="color:var(--red); border-color:var(--red)" id="reset-btn">Resetar Todo o Ciclo</button>
     </div>
   </div>
-  <div class="section-title">Reset do ciclo</div>
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;">
-    <button class="btn-reset" id="btn-reset-cycle" style="border-color:var(--red);color:var(--red);">⚠ Resetar ciclo completo</button>
-  </div>
-</div>
-
 </main>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDlbOqwAQQgz8H9eWU77EgKb6kj3_tcLyQ",
@@ -569,283 +103,148 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const DOC_ID = "usuario_unico";
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 
-// ══════════════════════════════════════════════
-//  CONFIG & CALENDAR
-// ══════════════════════════════════════════════
-const SESSIONS = {
-  weekday: [
-    { id: 's1', label: '19:30–21:00', mins: 90, color: 'var(--accent)' },
-    { id: 's2', label: '21:15–22:30', mins: 75, color: 'var(--accent2)' }
-  ],
-  saturday: [{ id: 'sat', label: '14:00–18:00', mins: 240, color: 'var(--accent3)' }],
-  sunday: [{ id: 'sun', label: '06:00–11:00', mins: 300, color: 'var(--accent3)' }]
-};
+// 🚨 IMPORTANTE: SUBSTITUA PELO SEU UID APÓS O PRIMEIRO LOGIN
+const ADMIN_UID = "COLE_SEU_UID_AQUI"; 
+const DOC_ID = "dados_estudo";
 
-const DAYS_PT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-const MONTHS_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+let state = { checks: {}, extras: [], notes: "" };
+let isAdmin = false;
 
-function getMonday(d) {
-  const day = d.getDay();
-  const diff = (day === 0) ? -6 : 1 - day;
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + diff);
-}
-
-function buildCalendar() {
-  const today = new Date();
-  const monday = getMonday(today);
-  const weeks = [];
-  for (let w = 0; w < 4; w++) {
-    const days = [];
-    for (let d = 0; d < 7; d++) {
-      const date = new Date(monday);
-      date.setDate(monday.getDate() + w * 7 + d);
-      days.push(date);
-    }
-    weeks.push(days);
+// Monitor de Autenticação
+onAuthStateChanged(auth, (user) => {
+  if (user && user.uid === ADMIN_UID) {
+    isAdmin = true;
+    document.getElementById('badge').style.display = 'inline-block';
+    document.getElementById('login-btn').textContent = '🔓';
+    document.getElementById('admin-extras-controls').style.display = 'block';
+    document.getElementById('admin-reset-area').style.display = 'block';
+    document.getElementById('notes-area').readOnly = false;
+  } else {
+    isAdmin = false;
+    document.getElementById('notes-area').readOnly = true;
+    if(user) console.log("Seu UID para copiar:", user.uid);
   }
-  return weeks;
+  loadData();
+});
+
+// Funções de Persistência
+async function loadData() {
+  const snap = await getDoc(doc(db, "ciclos", DOC_ID));
+  if (snap.exists()) state = snap.data();
+  renderAll();
 }
 
-const calendar = buildCalendar();
-const dateKey = (date) => date.toISOString().slice(0, 10);
-const getSessions = (date) => {
-  const dow = date.getDay();
-  if (dow === 6) return SESSIONS.saturday;
-  if (dow === 0) return SESSIONS.sunday;
-  return SESSIONS.weekday;
-};
-
-// ══════════════════════════════════════════════
-//  STATE & FIREBASE
-// ══════════════════════════════════════════════
-let state = { checks: {}, extras: [], notes: '' };
-
-async function saveAll() {
-  try {
-    await setDoc(doc(db, "ciclos", DOC_ID), state);
-    updateStats();
-    updateCharts();
-    updateExtrasTotal();
-  } catch (e) {
-    console.error("Erro ao salvar:", e);
-  }
+async function sync() {
+  if (!isAdmin) return;
+  await setDoc(doc(db, "ciclos", DOC_ID), state);
 }
 
-async function loadFromFirestore() {
-  const docRef = doc(db, "ciclos", DOC_ID);
-  const docSnap = await getDoc(docRef);
-  if (docSnap.exists()) state = docSnap.data();
-  initUI();
+// Renderização da Interface
+function renderAll() {
+  renderWeeks();
+  renderExtras();
+  document.getElementById('notes-area').value = state.notes || "";
 }
 
-// ══════════════════════════════════════════════
-//  RENDER FUNCTIONS
-// ══════════════════════════════════════════════
 function renderWeeks() {
   const container = document.getElementById('weeks-container');
-  container.innerHTML = '';
-  calendar.forEach((week, wi) => {
-    const wCard = document.createElement('div');
-    wCard.className = 'week-card';
-    wCard.style.marginBottom = '24px';
-    let wDone = 0, wTotal = 0;
-    week.forEach(day => {
-      getSessions(day).forEach(s => {
-        wTotal++;
-        if (state.checks[dateKey(day) + '_' + s.id]) wDone++;
-      });
-    });
-    const wPct = wTotal ? Math.round(wDone / wTotal * 100) : 0;
-    wCard.innerHTML = `
-      <div class="week-header">
-        <span class="week-label">Semana ${wi + 1} · ${week[0].getDate()}/${MONTHS_PT[week[0].getMonth()]} – ${week[6].getDate()}/${MONTHS_PT[week[6].getMonth()]}</span>
-        <span class="week-progress-text" id="wpct-${wi}">${wDone}/${wTotal} sessões · ${wPct}%</span>
-      </div>
-      <div class="week-progress-bar"><div class="week-progress-fill" id="wfill-${wi}" style="width:${wPct}%"></div></div>
-      <div class="days-table" id="week-table-${wi}"></div>
-    `;
-    container.appendChild(wCard);
-    const table = wCard.querySelector(`#week-table-${wi}`);
-    week.forEach(day => {
-      const dow = day.getDay();
-      const sessions = getSessions(day);
-      const isWeekend = dow === 0 || dow === 6;
-      const dRow = document.createElement('div');
-      dRow.className = `day-row${isWeekend ? ' weekend' : ''}`;
-      let dayHtml = `<span class="day-name ${dow === 6 ? 'sat' : dow === 0 ? 'sun' : ''}">${DAYS_PT[dow]} ${day.getDate()}/${MONTHS_PT[day.getMonth()]}</span>`;
-      sessions.forEach(s => {
-        const key = dateKey(day) + '_' + s.id;
-        dayHtml += `
-          <div class="session-block">
-            <label class="check-wrap">
-              <input type="checkbox" ${state.checks[key] ? 'checked' : ''} data-key="${key}">
-              <div class="custom-check"></div>
-            </label>
-            <span class="session-label">${s.label} · ${s.mins}min</span>
-          </div>`;
-      });
-      dRow.innerHTML = dayHtml;
-      table.appendChild(dRow);
-    });
-  });
+  container.innerHTML = "";
+  const dias = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
-  // Event delegation para os checkboxes
-  container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-    cb.addEventListener('change', (e) => {
-      state.checks[e.target.dataset.key] = e.target.checked;
-      saveAll();
-      renderWeeks(); // Re-render para atualizar progresso visual
-    });
-  });
-}
-
-function updateStats() {
-  let done = 0, total = 0, hoursDone = 0, hoursTotal = 0;
-  calendar.flat().forEach(day => {
-    getSessions(day).forEach(s => {
-      total++;
-      hoursTotal += s.mins;
-      if (state.checks[dateKey(day) + '_' + s.id]) {
-        done++;
-        hoursDone += s.mins;
-      }
-    });
-  });
-  const pct = total ? Math.round(done / total * 100) : 0;
-  document.getElementById('s-done').innerHTML = `${done}<span>/ <span id="s-total">${total}</span></span>`;
-  document.getElementById('s-pct').textContent = `${pct}% do ciclo`;
-  document.getElementById('s-hours').innerHTML = `${(hoursDone / 60).toFixed(1)}<span>h</span>`;
-  document.getElementById('s-hours-max').textContent = (hoursTotal / 60).toFixed(1);
-  document.getElementById('total-sessions-month').textContent = total;
-}
-
-// ══════════════════════════════════════════════
-//  CHARTS (LOGIC)
-// ══════════════════════════════════════════════
-function updateCharts() {
-  // Simplificado para brevidade, integrando as mesmas funções CSS/Canvas do original
-  const ws = calendar.map(week => {
-    let d = 0, t = 0;
-    week.forEach(day => getSessions(day).forEach(s => { t++; if(state.checks[dateKey(day)+'_'+s.id]) d++; }));
-    return { pct: t ? Math.round(d/t*100) : 0 };
-  });
-  const wrap = document.getElementById('chart-weekly-bars');
-  wrap.innerHTML = ws.map((w,i) => `
-    <div class="bar-col">
-      <span class="bar-pct">${w.pct}%</span>
-      <div class="bar-outer" style="height:100px;"><div class="bar-fill" style="height:${w.pct}px;background:var(--accent);"></div></div>
-      <span class="bar-col-label">Sem ${i+1}</span>
-    </div>`).join('');
+  for(let w=1; w<=4; w++) {
+    const card = document.createElement('div');
+    card.className = 'week-card';
+    card.innerHTML = `<div class="week-header">SEMANA 0${w}</div>`;
     
-  // Donut logic
-  const totalS = calendar.flat().reduce((acc, d) => acc + getSessions(d).length, 0);
-  const doneS = Object.values(state.checks).filter(v => v).length;
-  const donutPct = totalS ? Math.round(doneS/totalS*100) : 0;
-  document.getElementById('donut-svg').innerHTML = `
-    <circle cx="55" cy="55" r="40" fill="none" stroke="var(--border)" stroke-width="16"/>
-    <circle cx="55" cy="55" r="40" fill="none" stroke="var(--accent)" stroke-width="16" stroke-dasharray="${donutPct*2.51} 251" transform="rotate(-90 55 55)"/>
-    <text x="55" y="55" text-anchor="middle" dominant-baseline="central" fill="var(--text)" font-family="Space Mono" font-size="11" font-weight="700">${donutPct}%</text>`;
+    dias.forEach(dia => {
+      const row = document.createElement('div');
+      row.className = 'day-row';
+      const k1 = `w${w}_${dia}_s1`, k2 = `w${w}_${dia}_s2`;
+      
+      row.innerHTML = `
+        <span class="day-name">${dia}</span>
+        <label class="check-wrap">
+          <input type="checkbox" ${state.checks[k1]?'checked':''} ${!isAdmin?'disabled':''} data-key="${k1}">
+          <div class="custom-check"></div> <span style="font-size:0.6rem">Sessão 1</span>
+        </label>
+        <label class="check-wrap">
+          <input type="checkbox" ${state.checks[k2]?'checked':''} ${!isAdmin?'disabled':''} data-key="${k2}">
+          <div class="custom-check"></div> <span style="font-size:0.6rem">Sessão 2</span>
+        </label>
+      `;
+      card.appendChild(row);
+    });
+    container.appendChild(card);
+  }
+
+  container.querySelectorAll('input').forEach(i => {
+    i.onchange = (e) => {
+        state.checks[e.target.dataset.key] = e.target.checked;
+        sync();
+    };
+  });
 }
 
-// ══════════════════════════════════════════════
-//  EXTRAS, NOTES & ACTIONS
-// ══════════════════════════════════════════════
 function renderExtras() {
-  const list = document.getElementById('extras-list');
-  list.innerHTML = (state.extras || []).map((ex, i) => `
-    <div class="extra-row">
-      <input type="date" value="${ex.date}" data-idx="${i}" data-field="date">
-      <input type="number" value="${ex.mins}" data-idx="${i}" data-field="mins">
-      <input type="text" value="${ex.desc}" data-idx="${i}" data-field="desc">
-      <select data-idx="${i}" data-field="week">
-        <option value="1" ${ex.week==1?'selected':''}>Sem 1</option>
-        <option value="2" ${ex.week==2?'selected':''}>Sem 2</option>
-        <option value="3" ${ex.week==3?'selected':''}>Sem 3</option>
-        <option value="4" ${ex.week==4?'selected':''}>Sem 4</option>
-      </select>
-      <button class="btn-remove" data-idx="${i}">✕</button>
-    </div>`).join('');
+    const list = document.getElementById('extras-list');
+    list.innerHTML = (state.extras || []).map((ex, i) => `
+        <div class="day-row" style="grid-template-columns: 1fr 100px 40px">
+            <span class="day-name" style="color:var(--text)">${ex.materia}</span>
+            <span class="day-name">${ex.tempo} min</span>
+            ${isAdmin ? `<button class="remove-extra" data-idx="${i}" style="background:none; border:none; color:var(--red); cursor:pointer">✕</button>` : ''}
+        </div>
+    `).join('');
 
-  list.querySelectorAll('input, select').forEach(el => {
-    el.addEventListener('change', (e) => {
-      const { idx, field } = e.target.dataset;
-      state.extras[idx][field] = e.target.value;
-      saveAll();
+    list.querySelectorAll('.remove-extra').forEach(b => {
+        b.onclick = () => {
+            state.extras.splice(b.dataset.idx, 1);
+            renderExtras();
+            sync();
+        };
     });
-  });
-  list.querySelectorAll('.btn-remove').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      state.extras.splice(e.target.dataset.idx, 1);
-      saveAll();
-      renderExtras();
-    });
-  });
-  updateExtrasTotal();
 }
 
-function updateExtrasTotal() {
-  const tot = (state.extras || []).reduce((a, e) => a + (parseInt(e.mins) || 0), 0);
-  document.getElementById('extras-total').textContent = `Total extras: ${tot} min · ${Math.floor(tot/60)}h ${tot%60}min`;
-}
+// Eventos Global
+document.getElementById('login-btn').onclick = () => {
+    signInWithPopup(auth, provider).catch(e => alert("Erro: " + e.message));
+};
 
-// ══════════════════════════════════════════════
-//  INIT & EVENT BINDING
-// ══════════════════════════════════════════════
-function initUI() {
-  const now = new Date();
-  document.getElementById('header-date').textContent = `${DAYS_PT[now.getDay()]}, ${now.getDate()} ${MONTHS_PT[now.getMonth()]} ${now.getFullYear()}`;
-  renderWeeks();
-  updateStats();
-  renderExtras();
-  const ta = document.getElementById('notes-area');
-  ta.value = state.notes || '';
-  ta.addEventListener('input', (e) => {
+document.getElementById('add-extra-btn').onclick = () => {
+    const m = prompt("Matéria/Assunto:");
+    const t = prompt("Duração (minutos):");
+    if(m && t) {
+        state.extras.push({materia: m, tempo: t});
+        renderExtras();
+        sync();
+    }
+};
+
+document.getElementById('notes-area').oninput = (e) => {
     state.notes = e.target.value;
-    document.getElementById('notes-chars').textContent = e.target.value.length + ' caracteres';
-    saveAll();
-  });
-}
+    sync();
+};
 
-// Tab Switching
+document.getElementById('reset-btn').onclick = () => {
+    if(confirm("Limpar todo o progresso?")) {
+        state.checks = {};
+        state.extras = [];
+        sync();
+        renderAll();
+    }
+};
+
+// Navegação
 document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    const name = e.target.id.replace('btn-tab-', '');
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('tab-' + name).classList.add('active');
-    e.target.classList.add('active');
-    if (name === 'graficos') updateCharts();
-  });
+    btn.onclick = (e) => {
+        document.querySelectorAll('.tab-panel, .tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-' + e.target.dataset.tab).classList.add('active');
+        e.target.classList.add('active');
+    };
 });
 
-// Botões de Ação
-document.getElementById('btn-add-extra').addEventListener('click', () => {
-  state.extras.push({ date: new Date().toISOString().slice(0, 10), mins: 60, desc: '', week: 1 });
-  saveAll();
-  renderExtras();
-});
-
-document.getElementById('btn-clear-notes').addEventListener('click', () => {
-  if(confirm('Limpar notas?')) {
-    state.notes = '';
-    document.getElementById('notes-area').value = '';
-    saveAll();
-  }
-});
-
-document.getElementById('btn-reset-cycle').addEventListener('click', async () => {
-  if(confirm('Resetar ciclo completo? (Checkboxes e extras serão apagados)')) {
-    state.checks = {};
-    state.extras = [];
-    await saveAll();
-    location.reload();
-  }
-});
-
-// Início
-loadFromFirestore();
 </script>
 </body>
 </html>
