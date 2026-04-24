@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cronograma de Estudos — Ciclo Mensal</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161d;
+    --card: #1a1e28;
+    --border: #252a38;
+    --accent: #f0c040;
+    --accent2: #4fc3f7;
+    --accent3: #a78bfa;
+    --green: #4ade80;
+    --red: #f87171;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 28px 40px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    background: linear-gradient(180deg, #11141b 0%, transparent 100%);
+  }
+  header h1 {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 1.6rem;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  header h1 span { color: var(--accent); }
+  header p { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 20px 40px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab-btn {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 8px 20px;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { color: var(--text); background: var(--surface); }
+  .tab-btn.active {
+    background: var(--card);
+    color: var(--accent);
+    border-color: var(--border);
+  }
+
+  /* ── MAIN ── */
+  main { padding: 32px 40px; max-width: 1300px; margin: 0 auto; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── SECTION TITLES ── */
+  .section-title {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── WEEK CARDS ── */
+  .week-grid {
+    display: grid;
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+
+  .week-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .week-header {
+    background: var(--surface);
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .week-label {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .week-progress-text {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+  .week-progress-bar {
+    height: 3px;
+    background: var(--border);
+  }
+  .week-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 0.4s ease;
+    border-radius: 2px;
+  }
+
+  /* ── DAYS TABLE ── */
+  .days-table { width: 100%; }
+  .day-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 1fr 80px;
+    align-items: center;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border);
+    min-height: 48px;
+    gap: 12px;
+    transition: background 0.15s;
+  }
+  .day-row:last-child { border-bottom: none; }
+  .day-row:hover { background: rgba(255,255,255,0.02); }
+  .day-row.weekend { grid-template-columns: 110px 1fr 80px; }
+
+  .day-name {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .day-name.sat { color: var(--accent2); }
+  .day-name.sun { color: var(--accent3); }
+  .day-name.completed { color: var(--green); }
+
+  .session-block {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .session-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .session-label.s1 { color: rgba(240,192,64,0.7); }
+  .session-label.s2 { color: rgba(79,195,247,0.7); }
+  .session-label.weekend-lbl { color: rgba(167,139,250,0.7); }
+
+  /* ── CHECKBOX ── */
+  .check-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+  .check-wrap input[type="checkbox"] { display: none; }
+  .custom-check {
+    width: 20px;
+    height: 20px;
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .custom-check::after {
+    content: '';
+    width: 10px;
+    height: 7px;
+    border-left: 2px solid transparent;
+    border-bottom: 2px solid transparent;
+    transform: rotate(-45deg) translateY(-1px);
+    transition: all 0.15s;
+  }
+  input[type="checkbox"]:checked + .custom-check {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  input[type="checkbox"]:checked + .custom-check::after {
+    border-left-color: #000;
+    border-bottom-color: #000;
+  }
+
+  .day-total {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-align: right;
+  }
+  .day-total .mins { color: var(--accent); font-weight: 700; }
+
+  /* ── TABLE HEADER ── */
+  .day-row-head {
+    display: grid;
+    grid-template-columns: 110px 1fr 1fr 80px;
+    padding: 8px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    gap: 12px;
+  }
+  .day-row-head.weekend { grid-template-columns: 110px 1fr 80px; }
+  .col-head {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  /* ── STATS ROW ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-family: var(--mono);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .stat-value span { font-size: 0.75rem; color: var(--muted); margin-left: 4px; }
+  .stat-sub { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); margin-top: 4px; }
+
+  /* ── CHARTS ── */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+  @media (max-width: 800px) { .charts-grid { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .chart-title {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+  canvas { width: 100% !important; }
+
+  /* ── EXTRAS (Sessões Não Planejadas) ── */
+  .extra-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 40px;
+  }
+  .extra-row {
+    display: grid;
+    grid-template-columns: 120px 180px 1fr 80px 40px;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .extra-row.head .col-head { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  input[type="date"], input[type="time"], input[type="number"], input[type="text"] {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 7px 10px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus { border-color: var(--accent); }
+  input[type="number"] { width: 70px; }
+  .btn-add, .btn-remove {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 6px 10px;
+    transition: all 0.2s;
+  }
+  .btn-add { color: var(--accent); border-color: var(--accent); padding: 8px 18px; }
+  .btn-add:hover { background: var(--accent); color: #000; }
+  .btn-remove:hover { background: var(--red); color: #fff; border-color: var(--red); }
+  .extra-total {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    text-align: right;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── NOTES ── */
+  textarea {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    padding: 14px;
+    width: 100%;
+    resize: vertical;
+    outline: none;
+    min-height: 90px;
+    transition: border-color 0.2s;
+  }
+  textarea:focus { border-color: var(--accent); }
+
+  /* ── RESET ── */
+  .btn-reset {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-reset:hover { border-color: var(--red); color: var(--red); }
+
+  /* ── BAR CHART (CSS) ── */
+  .bar-chart-wrap { display: flex; align-items: flex-end; gap: 8px; height: 120px; }
+  .bar-col { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 4px; height: 100%; justify-content: flex-end; }
+  .bar-col-label { font-family: var(--mono); font-size: 0.58rem; color: var(--muted); text-transform: uppercase; }
+  .bar-outer { width: 100%; background: var(--surface); border-radius: 4px 4px 0 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+  .bar-fill { width: 100%; transition: height 0.5s ease; border-radius: 4px 4px 0 0; }
+  .bar-pct { font-family: var(--mono); font-size: 0.62rem; color: var(--text); }
+
+  /* ── DONUT ── */
+  .donut-wrap { display: flex; align-items: center; gap: 24px; }
+  .donut-svg { flex-shrink: 0; }
+  .donut-legend { display: flex; flex-direction: column; gap: 8px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-text { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); }
+  .legend-val { font-family: var(--mono); font-size: 0.65rem; color: var(--text); margin-left: auto; }
+
+  @media (max-width: 700px) {
+    main { padding: 20px 16px; }
+    .tabs { padding: 16px 16px 0; }
+    header { padding: 20px 16px 16px; }
+    .day-row, .day-row-head { grid-template-columns: 90px 1fr; }
+    .day-row.weekend, .day-row-head.weekend { grid-template-columns: 90px 1fr; }
+    .charts-grid { grid-template-columns: 1fr; }
+    .extra-row { grid-template-columns: 1fr 1fr; }
+  }
+
+  .pill {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: rgba(240,192,64,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(240,192,64,0.2);
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .inline-flex { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Cronograma de <span>Estudos</span></h1>
+    <p>Ciclo de adaptação · 1 mês · Concurso Público — Arquiteto SEC-BA</p>
+  </div>
+  <div style="text-align:right">
+    <p id="header-date" style="font-family:var(--mono);font-size:0.7rem;color:var(--muted)"></p>
+    <p style="font-family:var(--mono);font-size:0.65rem;color:var(--muted);margin-top:4px">
+      Sessões planejadas/mês: <span style="color:var(--accent)" id="total-sessions-month">—</span>
+    </p>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('semanas')">Semanas</button>
+  <button class="tab-btn" onclick="switchTab('graficos')">Gráficos</button>
+  <button class="tab-btn" onclick="switchTab('extras')">Sessões Extras</button>
+  <button class="tab-btn" onclick="switchTab('notas')">Notas</button>
+</div>
+
+<main>
+
+<!-- ══════════════ TAB: SEMANAS ══════════════ -->
+<div class="tab-panel active" id="tab-semanas">
+
+  <div class="stats-row" id="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Sessões feitas</div>
+      <div class="stat-value" id="s-done">0<span>/ <span id="s-total">0</span></span></div>
+      <div class="stat-sub" id="s-pct">0% do ciclo</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Horas cumpridas</div>
+      <div class="stat-value" id="s-hours">0<span>h</span></div>
+      <div class="stat-sub" id="s-hours-total">de <span id="s-hours-max">0</span>h planejadas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Dias completos</div>
+      <div class="stat-value" id="s-days-done">0<span>/<span id="s-days-total">0</span></span></div>
+      <div class="stat-sub">dias com 100% das sessões</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Semana atual</div>
+      <div class="stat-value" id="s-week-pct">—</div>
+      <div class="stat-sub" id="s-week-label">—</div>
+    </div>
+  </div>
+
+  <div id="weeks-container"></div>
+
+</div>
+
+<!-- ══════════════ TAB: GRÁFICOS ══════════════ -->
+<div class="tab-panel" id="tab-graficos">
+
+  <div class="charts-grid">
+
+    <div class="chart-card">
+      <div class="chart-title">Cumprimento por semana (%)</div>
+      <div class="bar-chart-wrap" id="chart-weekly-bars"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Distribuição — Sessões do ciclo</div>
+      <div class="donut-wrap">
+        <svg class="donut-svg" id="donut-svg" width="110" height="110" viewBox="0 0 110 110"></svg>
+        <div class="donut-legend" id="donut-legend"></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Progresso diário — Horas acumuladas</div>
+      <canvas id="chart-cumulative" height="140"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Sessões por tipo — mês completo</div>
+      <div class="bar-chart-wrap" id="chart-session-type"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ══════════════ TAB: EXTRAS ══════════════ -->
+<div class="tab-panel" id="tab-extras">
+
+  <div class="section-title">Sessões de Estudo Não Planejadas</div>
+
+  <div class="extra-section">
+    <p style="font-family:var(--mono);font-size:0.68rem;color:var(--muted);margin-bottom:20px;">
+      Registre aqui qualquer sessão extra realizada fora do cronograma padrão. Será contabilizada nos totais e gráficos.
+    </p>
+
+    <div class="extra-row head">
+      <div class="col-head">Data</div>
+      <div class="col-head">Duração (min)</div>
+      <div class="col-head">Descrição / Matéria</div>
+      <div class="col-head">Semana</div>
+      <div></div>
+    </div>
+
+    <div id="extras-list"></div>
+
+    <div style="margin-top:16px">
+      <button class="btn-add" onclick="addExtraRow()">+ Adicionar sessão extra</button>
+    </div>
+
+    <div class="extra-total" id="extras-total">Total extras: 0 min · 0h 0min</div>
+  </div>
+
+</div>
+
+<!-- ══════════════ TAB: NOTAS ══════════════ -->
+<div class="tab-panel" id="tab-notas">
+
+  <div class="section-title">Notas gerais do ciclo</div>
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:24px;">
+    <p style="font-family:var(--mono);font-size:0.65rem;color:var(--muted);margin-bottom:14px;">Use este espaço para observações, dificuldades, ajustes necessários ao ciclo, reflexões semanais, etc.</p>
+    <textarea id="notes-area" placeholder="Escreva suas notas aqui...&#10;&#10;Semana 1:&#10;Semana 2:&#10;Semana 3:&#10;Semana 4:"></textarea>
+    <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-family:var(--mono);font-size:0.62rem;color:var(--muted)" id="notes-chars">0 caracteres</span>
+      <button class="btn-reset" onclick="if(confirm('Limpar notas?')){document.getElementById('notes-area').value='';saveAll();}">Limpar</button>
+    </div>
+  </div>
+
+  <div class="section-title">Reset do ciclo</div>
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;">
+    <p style="font-family:var(--mono);font-size:0.68rem;color:var(--muted);margin-bottom:16px;">Inicia um novo ciclo mensal, resetando todos os checkboxes e sessões extras. As notas são preservadas por padrão.</p>
+    <button class="btn-reset" onclick="resetCycle()" style="border-color:var(--red);color:var(--red);">⚠ Resetar ciclo completo</button>
+  </div>
+
+</div>
+
+</main>
+
+<script>
+// ══════════════════════════════════════════════
+//  CONFIG — Sessões por tipo de dia
+// ══════════════════════════════════════════════
+const SESSIONS = {
+  weekday: [
+    { id: 's1', label: '19:30–21:00', mins: 90, color: 'var(--accent)' },
+    { id: 's2', label: '21:15–22:30', mins: 75, color: 'var(--accent2)' }
+  ],
+  saturday: [
+    { id: 'sat', label: '14:00–18:00', mins: 240, color: 'var(--accent3)' }
+  ],
+  sunday: [
+    { id: 'sun', label: '06:00–11:00', mins: 300, color: 'var(--accent3)' }
+  ]
+};
+
+// ══════════════════════════════════════════════
+//  BUILD CALENDAR (4 semanas, começando segunda)
+// ══════════════════════════════════════════════
+const DAYS_PT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const MONTHS_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+function getMonday(d) {
+  const day = d.getDay();
+  const diff = (day === 0) ? -6 : 1 - day;
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + diff);
+}
+
+function buildCalendar() {
+  const today = new Date();
+  const monday = getMonday(today);
+  const weeks = [];
+  for (let w = 0; w < 4; w++) {
+    const days = [];
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + w * 7 + d);
+      days.push(date);
+    }
+    weeks.push(days);
+  }
+  return weeks;
+}
+
+const calendar = buildCalendar();
+
+function dateKey(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function getSessions(date) {
+  const dow = date.getDay(); // 0=sun,6=sat
+  if (dow === 6) return SESSIONS.saturday;
+  if (dow === 0) return SESSIONS.sunday;
+  return SESSIONS.weekday;
+}
+
+function sessionMins(date) {
+  return getSessions(date).reduce((a, s) => a + s.mins, 0);
+}
+
+function totalMinutesPlanned() {
+  let tot = 0;
+  calendar.forEach(week => week.forEach(day => { tot += sessionMins(day); }));
+  return tot;
+}
+
+// ══════════════════════════════════════════════
+//  STATE (localStorage)
+// ══════════════════════════════════════════════
+function loadState() {
+  try { return JSON.parse(localStorage.getItem('study_cycle') || '{}'); } catch { return {}; }
+}
+function saveAll() {
+  localStorage.setItem('study_cycle', JSON.stringify(state));
+  updateStats();
+  updateCharts();
+  updateExtrasTotal();
+}
+
+let state = loadState();
+if (!state.checks) state.checks = {};
+if (!state.extras) state.extras = [];
+if (!state.notes) state.notes = '';
+
+// ══════════════════════════════════════════════
+//  RENDER WEEKS
+// ══════════════════════════════════════════════
+function renderWeeks() {
+  const container = document.getElementById('weeks-container');
+  container.innerHTML = '';
+
+  calendar.forEach((week, wi) => {
+    const wCard = document.createElement('div');
+    wCard.className = 'week-card';
+    wCard.style.marginBottom = '24px';
+
+    // calc week progress
+    let wDone = 0, wTotal = 0;
+    week.forEach(day => {
+      const sessions = getSessions(day);
+      sessions.forEach(s => {
+        const key = dateKey(day) + '_' + s.id;
+        wTotal++;
+        if (state.checks[key]) wDone++;
+      });
+    });
+    const wPct = wTotal ? Math.round(wDone / wTotal * 100) : 0;
+
+    wCard.innerHTML = `
+      <div class="week-header">
+        <span class="week-label">Semana ${wi + 1} · ${formatRange(week)}</span>
+        <span class="week-progress-text" id="wpct-${wi}">${wDone}/${wTotal} sessões · ${wPct}%</span>
+      </div>
+      <div class="week-progress-bar"><div class="week-progress-fill" id="wfill-${wi}" style="width:${wPct}%"></div></div>
+      <div class="days-table" id="week-table-${wi}"></div>
+    `;
+    container.appendChild(wCard);
+
+    const table = wCard.querySelector(`#week-table-${wi}`);
+
+    week.forEach(day => {
+      const dow = day.getDay();
+      const sessions = getSessions(day);
+      const isWeekend = dow === 0 || dow === 6;
+      const isSat = dow === 6;
+      const isSun = dow === 0;
+
+      // header row
+      const hRow = document.createElement('div');
+      hRow.className = `day-row-head${isWeekend ? ' weekend' : ''}`;
+      if (isWeekend) {
+        hRow.innerHTML = `<span class="col-head">Dia</span><span class="col-head">${isSat ? 'Tarde' : 'Manhã'}</span><span class="col-head">Horas</span>`;
+      } else {
+        hRow.innerHTML = `<span class="col-head">Dia</span><span class="col-head">Sessão 1</span><span class="col-head">Sessão 2</span><span class="col-head">Horas</span>`;
+      }
+      // Only show header for first day to avoid repetition — actually show for every day for clarity
+      // Let's show once per day
+
+      const dRow = document.createElement('div');
+      dRow.className = `day-row${isWeekend ? ' weekend' : ''}`;
+
+      const allDone = sessions.every(s => state.checks[dateKey(day) + '_' + s.id]);
+      const dayNameClass = isSat ? 'day-name sat' : isSun ? 'day-name sun' : (allDone ? 'day-name completed' : 'day-name');
+
+      let dayHtml = `<span class="${dayNameClass}">${DAYS_PT[dow]} ${day.getDate()}/${MONTHS_PT[day.getMonth()]}</span>`;
+
+      sessions.forEach(s => {
+        const key = dateKey(day) + '_' + s.id;
+        const checked = state.checks[key] ? 'checked' : '';
+        const lblClass = s.id === 's1' ? 's1' : s.id === 's2' ? 's2' : 'weekend-lbl';
+        dayHtml += `
+          <div class="session-block">
+            <label class="check-wrap">
+              <input type="checkbox" data-key="${key}" ${checked} onchange="toggleCheck('${key}',this.checked)">
+              <div class="custom-check"></div>
+            </label>
+            <span class="session-label ${lblClass}">${s.label} · ${s.mins}min</span>
+          </div>`;
+      });
+
+      const totalMins = sessions.reduce((a, s) => a + (state.checks[dateKey(day) + '_' + s.id] ? s.mins : 0), 0);
+      const maxMins = sessionMins(day);
+      dayHtml += `<div class="day-total"><span class="mins">${Math.floor(totalMins / 60)}h${(totalMins % 60).toString().padStart(2,'0')}</span>/<span>${Math.floor(maxMins / 60)}h${(maxMins % 60).toString().padStart(2,'0')}</span></div>`;
+
+      dRow.innerHTML = dayHtml;
+      table.appendChild(dRow);
+    });
+  });
+}
+
+function formatRange(week) {
+  const s = week[0], e = week[6];
+  return `${s.getDate()}/${MONTHS_PT[s.getMonth()]} – ${e.getDate()}/${MONTHS_PT[e.getMonth()]}`;
+}
+
+function toggleCheck(key, val) {
+  state.checks[key] = val;
+  saveAll();
+  // re-render just the week progress bars
+  calendar.forEach((week, wi) => {
+    let wDone = 0, wTotal = 0;
+    week.forEach(day => {
+      getSessions(day).forEach(s => {
+        const k = dateKey(day) + '_' + s.id;
+        wTotal++;
+        if (state.checks[k]) wDone++;
+      });
+    });
+    const wPct = wTotal ? Math.round(wDone / wTotal * 100) : 0;
+    const pfill = document.getElementById('wfill-' + wi);
+    const ptxt = document.getElementById('wpct-' + wi);
+    if (pfill) pfill.style.width = wPct + '%';
+    if (ptxt) ptxt.textContent = `${wDone}/${wTotal} sessões · ${wPct}%`;
+  });
+}
+
+// ══════════════════════════════════════════════
+//  STATS
+// ══════════════════════════════════════════════
+function countStats() {
+  let done = 0, total = 0, hoursDone = 0, hoursTotal = 0, daysDone = 0, daysTotal = 0;
+  calendar.forEach(week => {
+    week.forEach(day => {
+      const sessions = getSessions(day);
+      daysTotal++;
+      let dayComplete = true;
+      sessions.forEach(s => {
+        const key = dateKey(day) + '_' + s.id;
+        total++;
+        hoursTotal += s.mins;
+        if (state.checks[key]) { done++; hoursDone += s.mins; }
+        else dayComplete = false;
+      });
+      if (dayComplete) daysDone++;
+    });
+  });
+  return { done, total, hoursDone, hoursTotal, daysDone, daysTotal };
+}
+
+function weekStats() {
+  return calendar.map((week, wi) => {
+    let done = 0, total = 0;
+    week.forEach(day => {
+      getSessions(day).forEach(s => {
+        const key = dateKey(day) + '_' + s.id;
+        total++;
+        if (state.checks[key]) done++;
+      });
+    });
+    return { done, total, pct: total ? Math.round(done / total * 100) : 0 };
+  });
+}
+
+function updateStats() {
+  const { done, total, hoursDone, hoursTotal, daysDone, daysTotal } = countStats();
+  const pct = total ? Math.round(done / total * 100) : 0;
+  document.getElementById('s-done').innerHTML = `${done}<span>/ <span id="s-total">${total}</span></span>`;
+  document.getElementById('s-pct').textContent = `${pct}% do ciclo`;
+  document.getElementById('s-hours').innerHTML = `${(hoursDone / 60).toFixed(1)}<span>h</span>`;
+  document.getElementById('s-hours-max').textContent = (hoursTotal / 60).toFixed(1);
+  document.getElementById('s-days-done').innerHTML = `${daysDone}<span>/${daysTotal}</span>`;
+  document.getElementById('total-sessions-month').textContent = total;
+
+  // current week
+  const today = new Date();
+  let currentWeek = -1;
+  calendar.forEach((week, wi) => {
+    week.forEach(d => { if (dateKey(d) === dateKey(today)) currentWeek = wi; });
+  });
+  if (currentWeek >= 0) {
+    const ws = weekStats()[currentWeek];
+    document.getElementById('s-week-pct').innerHTML = `${ws.pct}<span>%</span>`;
+    document.getElementById('s-week-label').textContent = `Semana ${currentWeek + 1} · ${ws.done}/${ws.total}`;
+  }
+}
+
+// ══════════════════════════════════════════════
+//  CHARTS
+// ══════════════════════════════════════════════
+function updateCharts() {
+  renderBarChart();
+  renderDonut();
+  renderCumulative();
+  renderSessionType();
+}
+
+function renderBarChart() {
+  const wrap = document.getElementById('chart-weekly-bars');
+  const ws = weekStats();
+  const colors = ['var(--accent)', 'var(--accent2)', 'var(--accent3)', 'var(--green)'];
+  wrap.innerHTML = '';
+  ws.forEach((w, i) => {
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+    const maxH = 100;
+    const fillH = Math.round(w.pct / 100 * maxH);
+    col.innerHTML = `
+      <span class="bar-pct">${w.pct}%</span>
+      <div class="bar-outer" style="height:${maxH}px;">
+        <div class="bar-fill" style="height:${fillH}px;background:${colors[i]};"></div>
+      </div>
+      <span class="bar-col-label">Sem ${i + 1}</span>`;
+    wrap.appendChild(col);
+  });
+}
+
+function renderDonut() {
+  // Count by session type
+  let s1done = 0, s1tot = 0, s2done = 0, s2tot = 0, satdone = 0, sattot = 0, sundone = 0, suntot = 0;
+  calendar.forEach(week => week.forEach(day => {
+    const dow = day.getDay();
+    if (dow === 6) { sattot++; if (state.checks[dateKey(day) + '_sat']) satdone++; }
+    else if (dow === 0) { suntot++; if (state.checks[dateKey(day) + '_sun']) sundone++; }
+    else {
+      s1tot++; if (state.checks[dateKey(day) + '_s1']) s1done++;
+      s2tot++; if (state.checks[dateKey(day) + '_s2']) s2done++;
+    }
+  }));
+
+  const segments = [
+    { label: 'Seg-Sex S1', total: s1tot, done: s1done, color: '#f0c040' },
+    { label: 'Seg-Sex S2', total: s2tot, done: s2done, color: '#4fc3f7' },
+    { label: 'Sábado', total: sattot, done: satdone, color: '#a78bfa' },
+    { label: 'Domingo', total: suntot, done: sundone, color: '#4ade80' },
+  ];
+  const totalSessions = segments.reduce((a, s) => a + s.total, 0);
+
+  // SVG donut
+  const svg = document.getElementById('donut-svg');
+  const cx = 55, cy = 55, r = 40, strokeW = 16;
+  const circ = 2 * Math.PI * r;
+  let offset = 0;
+  let svgContent = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--border)" stroke-width="${strokeW}"/>`;
+
+  segments.forEach(seg => {
+    const frac = totalSessions ? seg.total / totalSessions : 0;
+    const dash = frac * circ;
+    const gap = circ - dash;
+    svgContent += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${seg.color}" stroke-width="${strokeW}" stroke-dasharray="${dash} ${gap}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})" opacity="0.85"/>`;
+    // done overlay
+    const fracDone = totalSessions ? seg.done / totalSessions : 0;
+    const dashDone = fracDone * circ;
+    const gapDone = circ - dashDone;
+    svgContent += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${seg.color}" stroke-width="${strokeW}" stroke-dasharray="${dashDone} ${gapDone}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"/>`;
+    offset += dash;
+  });
+
+  const totalDone = segments.reduce((a, s) => a + s.done, 0);
+  const pct = totalSessions ? Math.round(totalDone / totalSessions * 100) : 0;
+  svgContent += `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" fill="var(--text)" font-family="Space Mono" font-size="11" font-weight="700">${pct}%</text>`;
+  svg.innerHTML = svgContent;
+
+  const legend = document.getElementById('donut-legend');
+  legend.innerHTML = segments.map(seg => `
+    <div class="legend-item">
+      <div class="legend-dot" style="background:${seg.color}"></div>
+      <span class="legend-text">${seg.label}</span>
+      <span class="legend-val" style="margin-left:8px">${seg.done}/${seg.total}</span>
+    </div>`).join('');
+}
+
+function renderCumulative() {
+  const canvas = document.getElementById('chart-cumulative');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth || 300;
+  canvas.height = 140;
+
+  const allDays = calendar.flat();
+  let cumDone = 0, cumPlanned = 0;
+  const donePts = [], plannedPts = [];
+
+  allDays.forEach((day, i) => {
+    getSessions(day).forEach(s => {
+      const key = dateKey(day) + '_' + s.id;
+      cumPlanned += s.mins / 60;
+      if (state.checks[key]) cumDone += s.mins / 60;
+    });
+    donePts.push(cumDone);
+    plannedPts.push(cumPlanned);
+  });
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const W = canvas.width, H = canvas.height;
+  const maxVal = plannedPts[plannedPts.length - 1] || 1;
+  const pad = { t: 10, r: 10, b: 24, l: 32 };
+
+  function toX(i) { return pad.l + (i / (allDays.length - 1)) * (W - pad.l - pad.r); }
+  function toY(v) { return pad.t + (1 - v / maxVal) * (H - pad.t - pad.b); }
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
+  for (let g = 0; g <= 4; g++) {
+    const y = pad.t + g / 4 * (H - pad.t - pad.b);
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.font = '9px Space Mono';
+    ctx.fillText(Math.round(maxVal * (1 - g / 4)) + 'h', 0, y + 3);
+  }
+
+  // Planned line
+  ctx.beginPath();
+  plannedPts.forEach((v, i) => { i === 0 ? ctx.moveTo(toX(i), toY(v)) : ctx.lineTo(toX(i), toY(v)); });
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Done area
+  ctx.beginPath();
+  donePts.forEach((v, i) => { i === 0 ? ctx.moveTo(toX(i), toY(v)) : ctx.lineTo(toX(i), toY(v)); });
+  ctx.lineTo(toX(allDays.length - 1), toY(0));
+  ctx.lineTo(toX(0), toY(0));
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, pad.t, 0, H - pad.b);
+  grad.addColorStop(0, 'rgba(240,192,64,0.3)');
+  grad.addColorStop(1, 'rgba(240,192,64,0.0)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Done line
+  ctx.beginPath();
+  donePts.forEach((v, i) => { i === 0 ? ctx.moveTo(toX(i), toY(v)) : ctx.lineTo(toX(i), toY(v)); });
+  ctx.strokeStyle = '#f0c040';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Week labels
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.font = '8px Space Mono';
+  [0, 7, 14, 21].forEach((d, i) => {
+    ctx.fillText(`S${i + 1}`, toX(d), H - 4);
+  });
+}
+
+function renderSessionType() {
+  const wrap = document.getElementById('chart-session-type');
+  const types = [
+    { label: 'S1 Seg-Sex', color: 'var(--accent)', ids: calendar.flat().filter(d => d.getDay() !== 0 && d.getDay() !== 6).map(d => dateKey(d) + '_s1') },
+    { label: 'S2 Seg-Sex', color: 'var(--accent2)', ids: calendar.flat().filter(d => d.getDay() !== 0 && d.getDay() !== 6).map(d => dateKey(d) + '_s2') },
+    { label: 'Sábado', color: 'var(--accent3)', ids: calendar.flat().filter(d => d.getDay() === 6).map(d => dateKey(d) + '_sat') },
+    { label: 'Domingo', color: 'var(--green)', ids: calendar.flat().filter(d => d.getDay() === 0).map(d => dateKey(d) + '_sun') },
+  ];
+  wrap.innerHTML = '';
+  const maxTot = Math.max(...types.map(t => t.ids.length));
+  types.forEach(t => {
+    const done = t.ids.filter(k => state.checks[k]).length;
+    const pct = t.ids.length ? Math.round(done / t.ids.length * 100) : 0;
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+    col.innerHTML = `
+      <span class="bar-pct">${done}/${t.ids.length}</span>
+      <div class="bar-outer" style="height:100px;">
+        <div class="bar-fill" style="height:${Math.round(pct)}px;background:${t.color};"></div>
+      </div>
+      <span class="bar-col-label" style="font-size:0.52rem;text-align:center">${t.label}</span>`;
+    wrap.appendChild(col);
+  });
+}
+
+// ══════════════════════════════════════════════
+//  EXTRAS
+// ══════════════════════════════════════════════
+function renderExtras() {
+  const list = document.getElementById('extras-list');
+  list.innerHTML = '';
+  (state.extras || []).forEach((ex, i) => {
+    const row = document.createElement('div');
+    row.className = 'extra-row';
+    row.innerHTML = `
+      <input type="date" value="${ex.date || ''}" onchange="updateExtra(${i},'date',this.value)">
+      <input type="number" min="1" max="480" placeholder="minutos" value="${ex.mins || ''}" onchange="updateExtra(${i},'mins',parseInt(this.value)||0)">
+      <input type="text" placeholder="Matéria / descrição..." value="${ex.desc || ''}" onchange="updateExtra(${i},'desc',this.value)">
+      <select style="background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:0.72rem;padding:7px 8px;outline:none;" onchange="updateExtra(${i},'week',this.value)">
+        ${[1,2,3,4].map(w => `<option value="${w}" ${ex.week == w ? 'selected' : ''}>Sem ${w}</option>`).join('')}
+      </select>
+      <button class="btn-remove" onclick="removeExtra(${i})">✕</button>`;
+    list.appendChild(row);
+  });
+  updateExtrasTotal();
+}
+
+function addExtraRow() {
+  if (!state.extras) state.extras = [];
+  state.extras.push({ date: new Date().toISOString().slice(0, 10), mins: 60, desc: '', week: 1 });
+  saveAll();
+  renderExtras();
+}
+
+function updateExtra(i, field, val) {
+  state.extras[i][field] = val;
+  saveAll();
+}
+
+function removeExtra(i) {
+  state.extras.splice(i, 1);
+  saveAll();
+  renderExtras();
+}
+
+function updateExtrasTotal() {
+  const tot = (state.extras || []).reduce((a, e) => a + (parseInt(e.mins) || 0), 0);
+  document.getElementById('extras-total').textContent =
+    `Total extras: ${tot} min · ${Math.floor(tot / 60)}h ${tot % 60}min`;
+}
+
+// ══════════════════════════════════════════════
+//  NOTES
+// ══════════════════════════════════════════════
+function initNotes() {
+  const ta = document.getElementById('notes-area');
+  ta.value = state.notes || '';
+  ta.addEventListener('input', () => {
+    state.notes = ta.value;
+    document.getElementById('notes-chars').textContent = ta.value.length + ' caracteres';
+    saveAll();
+  });
+  document.getElementById('notes-chars').textContent = ta.value.length + ' caracteres';
+}
+
+// ══════════════════════════════════════════════
+//  RESET
+// ══════════════════════════════════════════════
+function resetCycle() {
+  if (!confirm('Tem certeza? Todos os checkboxes e sessões extras serão apagados.')) return;
+  const notes = state.notes;
+  state = { checks: {}, extras: [], notes };
+  saveAll();
+  renderWeeks();
+  renderExtras();
+}
+
+// ══════════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'graficos') { setTimeout(updateCharts, 50); }
+}
+
+// ══════════════════════════════════════════════
+//  HEADER DATE
+// ══════════════════════════════════════════════
+function setHeaderDate() {
+  const now = new Date();
+  const days = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  document.getElementById('header-date').textContent =
+    `${days[now.getDay()]}, ${now.getDate()} ${MONTHS_PT[now.getMonth()]} ${now.getFullYear()}`;
+}
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+setHeaderDate();
+renderWeeks();
+updateStats();
+renderExtras();
+initNotes();
+
+window.addEventListener('resize', () => {
+  if (document.getElementById('tab-graficos').classList.contains('active')) updateCharts();
+});
+</script>
+</body>
+</html>
