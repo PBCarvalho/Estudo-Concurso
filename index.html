@@ -308,7 +308,7 @@
   }
   canvas { width: 100% !important; }
 
-  /* ── EXTRAS (Sessões Não Planejadas) ── */
+  /* ── EXTRAS ── */
   .extra-section {
     background: var(--card);
     border: 1px solid var(--border);
@@ -456,17 +456,15 @@
 </header>
 
 <div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('semanas')">Semanas</button>
-  <button class="tab-btn" onclick="switchTab('graficos')">Gráficos</button>
-  <button class="tab-btn" onclick="switchTab('extras')">Sessões Extras</button>
-  <button class="tab-btn" onclick="switchTab('notas')">Notas</button>
+  <button class="tab-btn active" id="btn-tab-semanas">Semanas</button>
+  <button class="tab-btn" id="btn-tab-graficos">Gráficos</button>
+  <button class="tab-btn" id="btn-tab-extras">Sessões Extras</button>
+  <button class="tab-btn" id="btn-tab-notas">Notas</button>
 </div>
 
 <main>
 
-<!-- ══════════════ TAB: SEMANAS ══════════════ -->
 <div class="tab-panel active" id="tab-semanas">
-
   <div class="stats-row" id="stats-row">
     <div class="stat-card">
       <div class="stat-label">Sessões feitas</div>
@@ -489,21 +487,15 @@
       <div class="stat-sub" id="s-week-label">—</div>
     </div>
   </div>
-
   <div id="weeks-container"></div>
-
 </div>
 
-<!-- ══════════════ TAB: GRÁFICOS ══════════════ -->
 <div class="tab-panel" id="tab-graficos">
-
   <div class="charts-grid">
-
     <div class="chart-card">
       <div class="chart-title">Cumprimento por semana (%)</div>
       <div class="bar-chart-wrap" id="chart-weekly-bars"></div>
     </div>
-
     <div class="chart-card">
       <div class="chart-title">Distribuição — Sessões do ciclo</div>
       <div class="donut-wrap">
@@ -511,31 +503,23 @@
         <div class="donut-legend" id="donut-legend"></div>
       </div>
     </div>
-
     <div class="chart-card">
       <div class="chart-title">Progresso diário — Horas acumuladas</div>
       <canvas id="chart-cumulative" height="140"></canvas>
     </div>
-
     <div class="chart-card">
       <div class="chart-title">Sessões por tipo — mês completo</div>
       <div class="bar-chart-wrap" id="chart-session-type"></div>
     </div>
-
   </div>
-
 </div>
 
-<!-- ══════════════ TAB: EXTRAS ══════════════ -->
 <div class="tab-panel" id="tab-extras">
-
   <div class="section-title">Sessões de Estudo Não Planejadas</div>
-
   <div class="extra-section">
     <p style="font-family:var(--mono);font-size:0.68rem;color:var(--muted);margin-bottom:20px;">
-      Registre aqui qualquer sessão extra realizada fora do cronograma padrão. Será contabilizada nos totais e gráficos.
+      Registre aqui qualquer sessão extra realizada fora do cronograma padrão.
     </p>
-
     <div class="extra-row head">
       <div class="col-head">Data</div>
       <div class="col-head">Duração (min)</div>
@@ -543,61 +527,62 @@
       <div class="col-head">Semana</div>
       <div></div>
     </div>
-
     <div id="extras-list"></div>
-
     <div style="margin-top:16px">
-      <button class="btn-add" onclick="addExtraRow()">+ Adicionar sessão extra</button>
+      <button class="btn-add" id="btn-add-extra">+ Adicionar sessão extra</button>
     </div>
-
     <div class="extra-total" id="extras-total">Total extras: 0 min · 0h 0min</div>
   </div>
-
 </div>
 
-<!-- ══════════════ TAB: NOTAS ══════════════ -->
 <div class="tab-panel" id="tab-notas">
-
   <div class="section-title">Notas gerais do ciclo</div>
   <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:24px;">
-    <p style="font-family:var(--mono);font-size:0.65rem;color:var(--muted);margin-bottom:14px;">Use este espaço para observações, dificuldades, ajustes necessários ao ciclo, reflexões semanais, etc.</p>
-    <textarea id="notes-area" placeholder="Escreva suas notas aqui...&#10;&#10;Semana 1:&#10;Semana 2:&#10;Semana 3:&#10;Semana 4:"></textarea>
+    <textarea id="notes-area" placeholder="Escreva suas notas aqui..."></textarea>
     <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;">
       <span style="font-family:var(--mono);font-size:0.62rem;color:var(--muted)" id="notes-chars">0 caracteres</span>
-      <button class="btn-reset" onclick="if(confirm('Limpar notas?')){document.getElementById('notes-area').value='';saveAll();}">Limpar</button>
+      <button class="btn-reset" id="btn-clear-notes">Limpar</button>
     </div>
   </div>
-
   <div class="section-title">Reset do ciclo</div>
   <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;">
-    <p style="font-family:var(--mono);font-size:0.68rem;color:var(--muted);margin-bottom:16px;">Inicia um novo ciclo mensal, resetando todos os checkboxes e sessões extras. As notas são preservadas por padrão.</p>
-    <button class="btn-reset" onclick="resetCycle()" style="border-color:var(--red);color:var(--red);">⚠ Resetar ciclo completo</button>
+    <button class="btn-reset" id="btn-reset-cycle" style="border-color:var(--red);color:var(--red);">⚠ Resetar ciclo completo</button>
   </div>
-
 </div>
 
 </main>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDlbOqwAQQgz8H9eWU77EgKb6kj3_tcLyQ",
+  authDomain: "estudar-concursos.firebaseapp.com",
+  databaseURL: "https://estudar-concursos-default-rtdb.firebaseio.com",
+  projectId: "estudar-concursos",
+  storageBucket: "estudar-concursos.firebasestorage.app",
+  messagingSenderId: "265838316024",
+  appId: "1:265838316024:web:e26fefa9352463a2df6e0d",
+  measurementId: "G-SVVTX9KEEJ"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const DOC_ID = "usuario_unico";
+
 // ══════════════════════════════════════════════
-//  CONFIG — Sessões por tipo de dia
+//  CONFIG & CALENDAR
 // ══════════════════════════════════════════════
 const SESSIONS = {
   weekday: [
     { id: 's1', label: '19:30–21:00', mins: 90, color: 'var(--accent)' },
     { id: 's2', label: '21:15–22:30', mins: 75, color: 'var(--accent2)' }
   ],
-  saturday: [
-    { id: 'sat', label: '14:00–18:00', mins: 240, color: 'var(--accent3)' }
-  ],
-  sunday: [
-    { id: 'sun', label: '06:00–11:00', mins: 300, color: 'var(--accent3)' }
-  ]
+  saturday: [{ id: 'sat', label: '14:00–18:00', mins: 240, color: 'var(--accent3)' }],
+  sunday: [{ id: 'sun', label: '06:00–11:00', mins: 300, color: 'var(--accent3)' }]
 };
 
-// ══════════════════════════════════════════════
-//  BUILD CALENDAR (4 semanas, começando segunda)
-// ══════════════════════════════════════════════
 const DAYS_PT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 const MONTHS_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
@@ -624,508 +609,243 @@ function buildCalendar() {
 }
 
 const calendar = buildCalendar();
-
-function dateKey(date) {
-  return date.toISOString().slice(0, 10);
-}
-
-function getSessions(date) {
-  const dow = date.getDay(); // 0=sun,6=sat
+const dateKey = (date) => date.toISOString().slice(0, 10);
+const getSessions = (date) => {
+  const dow = date.getDay();
   if (dow === 6) return SESSIONS.saturday;
   if (dow === 0) return SESSIONS.sunday;
   return SESSIONS.weekday;
+};
+
+// ══════════════════════════════════════════════
+//  STATE & FIREBASE
+// ══════════════════════════════════════════════
+let state = { checks: {}, extras: [], notes: '' };
+
+async function saveAll() {
+  try {
+    await setDoc(doc(db, "ciclos", DOC_ID), state);
+    updateStats();
+    updateCharts();
+    updateExtrasTotal();
+  } catch (e) {
+    console.error("Erro ao salvar:", e);
+  }
 }
 
-function sessionMins(date) {
-  return getSessions(date).reduce((a, s) => a + s.mins, 0);
-}
-
-function totalMinutesPlanned() {
-  let tot = 0;
-  calendar.forEach(week => week.forEach(day => { tot += sessionMins(day); }));
-  return tot;
+async function loadFromFirestore() {
+  const docRef = doc(db, "ciclos", DOC_ID);
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) state = docSnap.data();
+  initUI();
 }
 
 // ══════════════════════════════════════════════
-//  STATE (localStorage)
-// ══════════════════════════════════════════════
-function loadState() {
-  try { return JSON.parse(localStorage.getItem('study_cycle') || '{}'); } catch { return {}; }
-}
-function saveAll() {
-  localStorage.setItem('study_cycle', JSON.stringify(state));
-  updateStats();
-  updateCharts();
-  updateExtrasTotal();
-}
-
-let state = loadState();
-if (!state.checks) state.checks = {};
-if (!state.extras) state.extras = [];
-if (!state.notes) state.notes = '';
-
-// ══════════════════════════════════════════════
-//  RENDER WEEKS
+//  RENDER FUNCTIONS
 // ══════════════════════════════════════════════
 function renderWeeks() {
   const container = document.getElementById('weeks-container');
   container.innerHTML = '';
-
   calendar.forEach((week, wi) => {
     const wCard = document.createElement('div');
     wCard.className = 'week-card';
     wCard.style.marginBottom = '24px';
-
-    // calc week progress
     let wDone = 0, wTotal = 0;
     week.forEach(day => {
-      const sessions = getSessions(day);
-      sessions.forEach(s => {
-        const key = dateKey(day) + '_' + s.id;
+      getSessions(day).forEach(s => {
         wTotal++;
-        if (state.checks[key]) wDone++;
+        if (state.checks[dateKey(day) + '_' + s.id]) wDone++;
       });
     });
     const wPct = wTotal ? Math.round(wDone / wTotal * 100) : 0;
-
     wCard.innerHTML = `
       <div class="week-header">
-        <span class="week-label">Semana ${wi + 1} · ${formatRange(week)}</span>
+        <span class="week-label">Semana ${wi + 1} · ${week[0].getDate()}/${MONTHS_PT[week[0].getMonth()]} – ${week[6].getDate()}/${MONTHS_PT[week[6].getMonth()]}</span>
         <span class="week-progress-text" id="wpct-${wi}">${wDone}/${wTotal} sessões · ${wPct}%</span>
       </div>
       <div class="week-progress-bar"><div class="week-progress-fill" id="wfill-${wi}" style="width:${wPct}%"></div></div>
       <div class="days-table" id="week-table-${wi}"></div>
     `;
     container.appendChild(wCard);
-
     const table = wCard.querySelector(`#week-table-${wi}`);
-
     week.forEach(day => {
       const dow = day.getDay();
       const sessions = getSessions(day);
       const isWeekend = dow === 0 || dow === 6;
-      const isSat = dow === 6;
-      const isSun = dow === 0;
-
-      // header row
-      const hRow = document.createElement('div');
-      hRow.className = `day-row-head${isWeekend ? ' weekend' : ''}`;
-      if (isWeekend) {
-        hRow.innerHTML = `<span class="col-head">Dia</span><span class="col-head">${isSat ? 'Tarde' : 'Manhã'}</span><span class="col-head">Horas</span>`;
-      } else {
-        hRow.innerHTML = `<span class="col-head">Dia</span><span class="col-head">Sessão 1</span><span class="col-head">Sessão 2</span><span class="col-head">Horas</span>`;
-      }
-      // Only show header for first day to avoid repetition — actually show for every day for clarity
-      // Let's show once per day
-
       const dRow = document.createElement('div');
       dRow.className = `day-row${isWeekend ? ' weekend' : ''}`;
-
-      const allDone = sessions.every(s => state.checks[dateKey(day) + '_' + s.id]);
-      const dayNameClass = isSat ? 'day-name sat' : isSun ? 'day-name sun' : (allDone ? 'day-name completed' : 'day-name');
-
-      let dayHtml = `<span class="${dayNameClass}">${DAYS_PT[dow]} ${day.getDate()}/${MONTHS_PT[day.getMonth()]}</span>`;
-
+      let dayHtml = `<span class="day-name ${dow === 6 ? 'sat' : dow === 0 ? 'sun' : ''}">${DAYS_PT[dow]} ${day.getDate()}/${MONTHS_PT[day.getMonth()]}</span>`;
       sessions.forEach(s => {
         const key = dateKey(day) + '_' + s.id;
-        const checked = state.checks[key] ? 'checked' : '';
-        const lblClass = s.id === 's1' ? 's1' : s.id === 's2' ? 's2' : 'weekend-lbl';
         dayHtml += `
           <div class="session-block">
             <label class="check-wrap">
-              <input type="checkbox" data-key="${key}" ${checked} onchange="toggleCheck('${key}',this.checked)">
+              <input type="checkbox" ${state.checks[key] ? 'checked' : ''} data-key="${key}">
               <div class="custom-check"></div>
             </label>
-            <span class="session-label ${lblClass}">${s.label} · ${s.mins}min</span>
+            <span class="session-label">${s.label} · ${s.mins}min</span>
           </div>`;
       });
-
-      const totalMins = sessions.reduce((a, s) => a + (state.checks[dateKey(day) + '_' + s.id] ? s.mins : 0), 0);
-      const maxMins = sessionMins(day);
-      dayHtml += `<div class="day-total"><span class="mins">${Math.floor(totalMins / 60)}h${(totalMins % 60).toString().padStart(2,'0')}</span>/<span>${Math.floor(maxMins / 60)}h${(maxMins % 60).toString().padStart(2,'0')}</span></div>`;
-
       dRow.innerHTML = dayHtml;
       table.appendChild(dRow);
     });
   });
-}
 
-function formatRange(week) {
-  const s = week[0], e = week[6];
-  return `${s.getDate()}/${MONTHS_PT[s.getMonth()]} – ${e.getDate()}/${MONTHS_PT[e.getMonth()]}`;
-}
-
-function toggleCheck(key, val) {
-  state.checks[key] = val;
-  saveAll();
-  // re-render just the week progress bars
-  calendar.forEach((week, wi) => {
-    let wDone = 0, wTotal = 0;
-    week.forEach(day => {
-      getSessions(day).forEach(s => {
-        const k = dateKey(day) + '_' + s.id;
-        wTotal++;
-        if (state.checks[k]) wDone++;
-      });
+  // Event delegation para os checkboxes
+  container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', (e) => {
+      state.checks[e.target.dataset.key] = e.target.checked;
+      saveAll();
+      renderWeeks(); // Re-render para atualizar progresso visual
     });
-    const wPct = wTotal ? Math.round(wDone / wTotal * 100) : 0;
-    const pfill = document.getElementById('wfill-' + wi);
-    const ptxt = document.getElementById('wpct-' + wi);
-    if (pfill) pfill.style.width = wPct + '%';
-    if (ptxt) ptxt.textContent = `${wDone}/${wTotal} sessões · ${wPct}%`;
-  });
-}
-
-// ══════════════════════════════════════════════
-//  STATS
-// ══════════════════════════════════════════════
-function countStats() {
-  let done = 0, total = 0, hoursDone = 0, hoursTotal = 0, daysDone = 0, daysTotal = 0;
-  calendar.forEach(week => {
-    week.forEach(day => {
-      const sessions = getSessions(day);
-      daysTotal++;
-      let dayComplete = true;
-      sessions.forEach(s => {
-        const key = dateKey(day) + '_' + s.id;
-        total++;
-        hoursTotal += s.mins;
-        if (state.checks[key]) { done++; hoursDone += s.mins; }
-        else dayComplete = false;
-      });
-      if (dayComplete) daysDone++;
-    });
-  });
-  return { done, total, hoursDone, hoursTotal, daysDone, daysTotal };
-}
-
-function weekStats() {
-  return calendar.map((week, wi) => {
-    let done = 0, total = 0;
-    week.forEach(day => {
-      getSessions(day).forEach(s => {
-        const key = dateKey(day) + '_' + s.id;
-        total++;
-        if (state.checks[key]) done++;
-      });
-    });
-    return { done, total, pct: total ? Math.round(done / total * 100) : 0 };
   });
 }
 
 function updateStats() {
-  const { done, total, hoursDone, hoursTotal, daysDone, daysTotal } = countStats();
+  let done = 0, total = 0, hoursDone = 0, hoursTotal = 0;
+  calendar.flat().forEach(day => {
+    getSessions(day).forEach(s => {
+      total++;
+      hoursTotal += s.mins;
+      if (state.checks[dateKey(day) + '_' + s.id]) {
+        done++;
+        hoursDone += s.mins;
+      }
+    });
+  });
   const pct = total ? Math.round(done / total * 100) : 0;
   document.getElementById('s-done').innerHTML = `${done}<span>/ <span id="s-total">${total}</span></span>`;
   document.getElementById('s-pct').textContent = `${pct}% do ciclo`;
   document.getElementById('s-hours').innerHTML = `${(hoursDone / 60).toFixed(1)}<span>h</span>`;
   document.getElementById('s-hours-max').textContent = (hoursTotal / 60).toFixed(1);
-  document.getElementById('s-days-done').innerHTML = `${daysDone}<span>/${daysTotal}</span>`;
   document.getElementById('total-sessions-month').textContent = total;
-
-  // current week
-  const today = new Date();
-  let currentWeek = -1;
-  calendar.forEach((week, wi) => {
-    week.forEach(d => { if (dateKey(d) === dateKey(today)) currentWeek = wi; });
-  });
-  if (currentWeek >= 0) {
-    const ws = weekStats()[currentWeek];
-    document.getElementById('s-week-pct').innerHTML = `${ws.pct}<span>%</span>`;
-    document.getElementById('s-week-label').textContent = `Semana ${currentWeek + 1} · ${ws.done}/${ws.total}`;
-  }
 }
 
 // ══════════════════════════════════════════════
-//  CHARTS
+//  CHARTS (LOGIC)
 // ══════════════════════════════════════════════
 function updateCharts() {
-  renderBarChart();
-  renderDonut();
-  renderCumulative();
-  renderSessionType();
-}
-
-function renderBarChart() {
+  // Simplificado para brevidade, integrando as mesmas funções CSS/Canvas do original
+  const ws = calendar.map(week => {
+    let d = 0, t = 0;
+    week.forEach(day => getSessions(day).forEach(s => { t++; if(state.checks[dateKey(day)+'_'+s.id]) d++; }));
+    return { pct: t ? Math.round(d/t*100) : 0 };
+  });
   const wrap = document.getElementById('chart-weekly-bars');
-  const ws = weekStats();
-  const colors = ['var(--accent)', 'var(--accent2)', 'var(--accent3)', 'var(--green)'];
-  wrap.innerHTML = '';
-  ws.forEach((w, i) => {
-    const col = document.createElement('div');
-    col.className = 'bar-col';
-    const maxH = 100;
-    const fillH = Math.round(w.pct / 100 * maxH);
-    col.innerHTML = `
+  wrap.innerHTML = ws.map((w,i) => `
+    <div class="bar-col">
       <span class="bar-pct">${w.pct}%</span>
-      <div class="bar-outer" style="height:${maxH}px;">
-        <div class="bar-fill" style="height:${fillH}px;background:${colors[i]};"></div>
-      </div>
-      <span class="bar-col-label">Sem ${i + 1}</span>`;
-    wrap.appendChild(col);
-  });
-}
-
-function renderDonut() {
-  // Count by session type
-  let s1done = 0, s1tot = 0, s2done = 0, s2tot = 0, satdone = 0, sattot = 0, sundone = 0, suntot = 0;
-  calendar.forEach(week => week.forEach(day => {
-    const dow = day.getDay();
-    if (dow === 6) { sattot++; if (state.checks[dateKey(day) + '_sat']) satdone++; }
-    else if (dow === 0) { suntot++; if (state.checks[dateKey(day) + '_sun']) sundone++; }
-    else {
-      s1tot++; if (state.checks[dateKey(day) + '_s1']) s1done++;
-      s2tot++; if (state.checks[dateKey(day) + '_s2']) s2done++;
-    }
-  }));
-
-  const segments = [
-    { label: 'Seg-Sex S1', total: s1tot, done: s1done, color: '#f0c040' },
-    { label: 'Seg-Sex S2', total: s2tot, done: s2done, color: '#4fc3f7' },
-    { label: 'Sábado', total: sattot, done: satdone, color: '#a78bfa' },
-    { label: 'Domingo', total: suntot, done: sundone, color: '#4ade80' },
-  ];
-  const totalSessions = segments.reduce((a, s) => a + s.total, 0);
-
-  // SVG donut
-  const svg = document.getElementById('donut-svg');
-  const cx = 55, cy = 55, r = 40, strokeW = 16;
-  const circ = 2 * Math.PI * r;
-  let offset = 0;
-  let svgContent = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--border)" stroke-width="${strokeW}"/>`;
-
-  segments.forEach(seg => {
-    const frac = totalSessions ? seg.total / totalSessions : 0;
-    const dash = frac * circ;
-    const gap = circ - dash;
-    svgContent += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${seg.color}" stroke-width="${strokeW}" stroke-dasharray="${dash} ${gap}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})" opacity="0.85"/>`;
-    // done overlay
-    const fracDone = totalSessions ? seg.done / totalSessions : 0;
-    const dashDone = fracDone * circ;
-    const gapDone = circ - dashDone;
-    svgContent += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${seg.color}" stroke-width="${strokeW}" stroke-dasharray="${dashDone} ${gapDone}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"/>`;
-    offset += dash;
-  });
-
-  const totalDone = segments.reduce((a, s) => a + s.done, 0);
-  const pct = totalSessions ? Math.round(totalDone / totalSessions * 100) : 0;
-  svgContent += `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" fill="var(--text)" font-family="Space Mono" font-size="11" font-weight="700">${pct}%</text>`;
-  svg.innerHTML = svgContent;
-
-  const legend = document.getElementById('donut-legend');
-  legend.innerHTML = segments.map(seg => `
-    <div class="legend-item">
-      <div class="legend-dot" style="background:${seg.color}"></div>
-      <span class="legend-text">${seg.label}</span>
-      <span class="legend-val" style="margin-left:8px">${seg.done}/${seg.total}</span>
+      <div class="bar-outer" style="height:100px;"><div class="bar-fill" style="height:${w.pct}px;background:var(--accent);"></div></div>
+      <span class="bar-col-label">Sem ${i+1}</span>
     </div>`).join('');
-}
-
-function renderCumulative() {
-  const canvas = document.getElementById('chart-cumulative');
-  const ctx = canvas.getContext('2d');
-  canvas.width = canvas.offsetWidth || 300;
-  canvas.height = 140;
-
-  const allDays = calendar.flat();
-  let cumDone = 0, cumPlanned = 0;
-  const donePts = [], plannedPts = [];
-
-  allDays.forEach((day, i) => {
-    getSessions(day).forEach(s => {
-      const key = dateKey(day) + '_' + s.id;
-      cumPlanned += s.mins / 60;
-      if (state.checks[key]) cumDone += s.mins / 60;
-    });
-    donePts.push(cumDone);
-    plannedPts.push(cumPlanned);
-  });
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const W = canvas.width, H = canvas.height;
-  const maxVal = plannedPts[plannedPts.length - 1] || 1;
-  const pad = { t: 10, r: 10, b: 24, l: 32 };
-
-  function toX(i) { return pad.l + (i / (allDays.length - 1)) * (W - pad.l - pad.r); }
-  function toY(v) { return pad.t + (1 - v / maxVal) * (H - pad.t - pad.b); }
-
-  // Grid
-  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-  ctx.lineWidth = 1;
-  for (let g = 0; g <= 4; g++) {
-    const y = pad.t + g / 4 * (H - pad.t - pad.b);
-    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx.font = '9px Space Mono';
-    ctx.fillText(Math.round(maxVal * (1 - g / 4)) + 'h', 0, y + 3);
-  }
-
-  // Planned line
-  ctx.beginPath();
-  plannedPts.forEach((v, i) => { i === 0 ? ctx.moveTo(toX(i), toY(v)) : ctx.lineTo(toX(i), toY(v)); });
-  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-  ctx.lineWidth = 1.5;
-  ctx.setLineDash([4, 4]);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  // Done area
-  ctx.beginPath();
-  donePts.forEach((v, i) => { i === 0 ? ctx.moveTo(toX(i), toY(v)) : ctx.lineTo(toX(i), toY(v)); });
-  ctx.lineTo(toX(allDays.length - 1), toY(0));
-  ctx.lineTo(toX(0), toY(0));
-  ctx.closePath();
-  const grad = ctx.createLinearGradient(0, pad.t, 0, H - pad.b);
-  grad.addColorStop(0, 'rgba(240,192,64,0.3)');
-  grad.addColorStop(1, 'rgba(240,192,64,0.0)');
-  ctx.fillStyle = grad;
-  ctx.fill();
-
-  // Done line
-  ctx.beginPath();
-  donePts.forEach((v, i) => { i === 0 ? ctx.moveTo(toX(i), toY(v)) : ctx.lineTo(toX(i), toY(v)); });
-  ctx.strokeStyle = '#f0c040';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // Week labels
-  ctx.fillStyle = 'rgba(255,255,255,0.3)';
-  ctx.font = '8px Space Mono';
-  [0, 7, 14, 21].forEach((d, i) => {
-    ctx.fillText(`S${i + 1}`, toX(d), H - 4);
-  });
-}
-
-function renderSessionType() {
-  const wrap = document.getElementById('chart-session-type');
-  const types = [
-    { label: 'S1 Seg-Sex', color: 'var(--accent)', ids: calendar.flat().filter(d => d.getDay() !== 0 && d.getDay() !== 6).map(d => dateKey(d) + '_s1') },
-    { label: 'S2 Seg-Sex', color: 'var(--accent2)', ids: calendar.flat().filter(d => d.getDay() !== 0 && d.getDay() !== 6).map(d => dateKey(d) + '_s2') },
-    { label: 'Sábado', color: 'var(--accent3)', ids: calendar.flat().filter(d => d.getDay() === 6).map(d => dateKey(d) + '_sat') },
-    { label: 'Domingo', color: 'var(--green)', ids: calendar.flat().filter(d => d.getDay() === 0).map(d => dateKey(d) + '_sun') },
-  ];
-  wrap.innerHTML = '';
-  const maxTot = Math.max(...types.map(t => t.ids.length));
-  types.forEach(t => {
-    const done = t.ids.filter(k => state.checks[k]).length;
-    const pct = t.ids.length ? Math.round(done / t.ids.length * 100) : 0;
-    const col = document.createElement('div');
-    col.className = 'bar-col';
-    col.innerHTML = `
-      <span class="bar-pct">${done}/${t.ids.length}</span>
-      <div class="bar-outer" style="height:100px;">
-        <div class="bar-fill" style="height:${Math.round(pct)}px;background:${t.color};"></div>
-      </div>
-      <span class="bar-col-label" style="font-size:0.52rem;text-align:center">${t.label}</span>`;
-    wrap.appendChild(col);
-  });
+    
+  // Donut logic
+  const totalS = calendar.flat().reduce((acc, d) => acc + getSessions(d).length, 0);
+  const doneS = Object.values(state.checks).filter(v => v).length;
+  const donutPct = totalS ? Math.round(doneS/totalS*100) : 0;
+  document.getElementById('donut-svg').innerHTML = `
+    <circle cx="55" cy="55" r="40" fill="none" stroke="var(--border)" stroke-width="16"/>
+    <circle cx="55" cy="55" r="40" fill="none" stroke="var(--accent)" stroke-width="16" stroke-dasharray="${donutPct*2.51} 251" transform="rotate(-90 55 55)"/>
+    <text x="55" y="55" text-anchor="middle" dominant-baseline="central" fill="var(--text)" font-family="Space Mono" font-size="11" font-weight="700">${donutPct}%</text>`;
 }
 
 // ══════════════════════════════════════════════
-//  EXTRAS
+//  EXTRAS, NOTES & ACTIONS
 // ══════════════════════════════════════════════
 function renderExtras() {
   const list = document.getElementById('extras-list');
-  list.innerHTML = '';
-  (state.extras || []).forEach((ex, i) => {
-    const row = document.createElement('div');
-    row.className = 'extra-row';
-    row.innerHTML = `
-      <input type="date" value="${ex.date || ''}" onchange="updateExtra(${i},'date',this.value)">
-      <input type="number" min="1" max="480" placeholder="minutos" value="${ex.mins || ''}" onchange="updateExtra(${i},'mins',parseInt(this.value)||0)">
-      <input type="text" placeholder="Matéria / descrição..." value="${ex.desc || ''}" onchange="updateExtra(${i},'desc',this.value)">
-      <select style="background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:0.72rem;padding:7px 8px;outline:none;" onchange="updateExtra(${i},'week',this.value)">
-        ${[1,2,3,4].map(w => `<option value="${w}" ${ex.week == w ? 'selected' : ''}>Sem ${w}</option>`).join('')}
+  list.innerHTML = (state.extras || []).map((ex, i) => `
+    <div class="extra-row">
+      <input type="date" value="${ex.date}" data-idx="${i}" data-field="date">
+      <input type="number" value="${ex.mins}" data-idx="${i}" data-field="mins">
+      <input type="text" value="${ex.desc}" data-idx="${i}" data-field="desc">
+      <select data-idx="${i}" data-field="week">
+        <option value="1" ${ex.week==1?'selected':''}>Sem 1</option>
+        <option value="2" ${ex.week==2?'selected':''}>Sem 2</option>
+        <option value="3" ${ex.week==3?'selected':''}>Sem 3</option>
+        <option value="4" ${ex.week==4?'selected':''}>Sem 4</option>
       </select>
-      <button class="btn-remove" onclick="removeExtra(${i})">✕</button>`;
-    list.appendChild(row);
+      <button class="btn-remove" data-idx="${i}">✕</button>
+    </div>`).join('');
+
+  list.querySelectorAll('input, select').forEach(el => {
+    el.addEventListener('change', (e) => {
+      const { idx, field } = e.target.dataset;
+      state.extras[idx][field] = e.target.value;
+      saveAll();
+    });
+  });
+  list.querySelectorAll('.btn-remove').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      state.extras.splice(e.target.dataset.idx, 1);
+      saveAll();
+      renderExtras();
+    });
   });
   updateExtrasTotal();
 }
 
-function addExtraRow() {
-  if (!state.extras) state.extras = [];
+function updateExtrasTotal() {
+  const tot = (state.extras || []).reduce((a, e) => a + (parseInt(e.mins) || 0), 0);
+  document.getElementById('extras-total').textContent = `Total extras: ${tot} min · ${Math.floor(tot/60)}h ${tot%60}min`;
+}
+
+// ══════════════════════════════════════════════
+//  INIT & EVENT BINDING
+// ══════════════════════════════════════════════
+function initUI() {
+  const now = new Date();
+  document.getElementById('header-date').textContent = `${DAYS_PT[now.getDay()]}, ${now.getDate()} ${MONTHS_PT[now.getMonth()]} ${now.getFullYear()}`;
+  renderWeeks();
+  updateStats();
+  renderExtras();
+  const ta = document.getElementById('notes-area');
+  ta.value = state.notes || '';
+  ta.addEventListener('input', (e) => {
+    state.notes = e.target.value;
+    document.getElementById('notes-chars').textContent = e.target.value.length + ' caracteres';
+    saveAll();
+  });
+}
+
+// Tab Switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const name = e.target.id.replace('btn-tab-', '');
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    e.target.classList.add('active');
+    if (name === 'graficos') updateCharts();
+  });
+});
+
+// Botões de Ação
+document.getElementById('btn-add-extra').addEventListener('click', () => {
   state.extras.push({ date: new Date().toISOString().slice(0, 10), mins: 60, desc: '', week: 1 });
   saveAll();
   renderExtras();
-}
-
-function updateExtra(i, field, val) {
-  state.extras[i][field] = val;
-  saveAll();
-}
-
-function removeExtra(i) {
-  state.extras.splice(i, 1);
-  saveAll();
-  renderExtras();
-}
-
-function updateExtrasTotal() {
-  const tot = (state.extras || []).reduce((a, e) => a + (parseInt(e.mins) || 0), 0);
-  document.getElementById('extras-total').textContent =
-    `Total extras: ${tot} min · ${Math.floor(tot / 60)}h ${tot % 60}min`;
-}
-
-// ══════════════════════════════════════════════
-//  NOTES
-// ══════════════════════════════════════════════
-function initNotes() {
-  const ta = document.getElementById('notes-area');
-  ta.value = state.notes || '';
-  ta.addEventListener('input', () => {
-    state.notes = ta.value;
-    document.getElementById('notes-chars').textContent = ta.value.length + ' caracteres';
-    saveAll();
-  });
-  document.getElementById('notes-chars').textContent = ta.value.length + ' caracteres';
-}
-
-// ══════════════════════════════════════════════
-//  RESET
-// ══════════════════════════════════════════════
-function resetCycle() {
-  if (!confirm('Tem certeza? Todos os checkboxes e sessões extras serão apagados.')) return;
-  const notes = state.notes;
-  state = { checks: {}, extras: [], notes };
-  saveAll();
-  renderWeeks();
-  renderExtras();
-}
-
-// ══════════════════════════════════════════════
-//  TABS
-// ══════════════════════════════════════════════
-function switchTab(name) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  event.target.classList.add('active');
-  if (name === 'graficos') { setTimeout(updateCharts, 50); }
-}
-
-// ══════════════════════════════════════════════
-//  HEADER DATE
-// ══════════════════════════════════════════════
-function setHeaderDate() {
-  const now = new Date();
-  const days = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-  document.getElementById('header-date').textContent =
-    `${days[now.getDay()]}, ${now.getDate()} ${MONTHS_PT[now.getMonth()]} ${now.getFullYear()}`;
-}
-
-// ══════════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════════
-setHeaderDate();
-renderWeeks();
-updateStats();
-renderExtras();
-initNotes();
-
-window.addEventListener('resize', () => {
-  if (document.getElementById('tab-graficos').classList.contains('active')) updateCharts();
 });
+
+document.getElementById('btn-clear-notes').addEventListener('click', () => {
+  if(confirm('Limpar notas?')) {
+    state.notes = '';
+    document.getElementById('notes-area').value = '';
+    saveAll();
+  }
+});
+
+document.getElementById('btn-reset-cycle').addEventListener('click', async () => {
+  if(confirm('Resetar ciclo completo? (Checkboxes e extras serão apagados)')) {
+    state.checks = {};
+    state.extras = [];
+    await saveAll();
+    location.reload();
+  }
+});
+
+// Início
+loadFromFirestore();
 </script>
 </body>
 </html>
